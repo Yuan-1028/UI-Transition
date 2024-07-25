@@ -27,7 +27,6 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-
 class ConversationDataset(Dataset):
     def __init__(self,
                  root_dir,
