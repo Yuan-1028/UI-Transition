@@ -83,10 +83,7 @@ def draw_bounding_boxes(image_path, json_data, output_path, font_path):
     font = ImageFont.truetype(font_path, 24)
 
     for idx, element in enumerate(json_data["compos"], 1):
-        if "position" in element:
-            position = element["position"]
-        else:
-            position = element
+        position = element
         
         column_min = position.get("column_min", 0)
         row_min = position.get("row_min", 0)
@@ -153,15 +150,11 @@ def calculate_accuracy(model_element, human_element, data_id):
         return False
     
     def get_box(element):
-        if "position" in element:
-            pos = element["position"]
-        else:
-            pos = element
         return (
-            pos.get("column_min", 0),
-            pos.get("row_min", 0),
-            pos.get("column_max", 0),
-            pos.get("row_max", 0)
+            element.get("column_min", 0),
+            element.get("row_min", 0),
+            element.get("column_max", 0),
+            element.get("row_max", 0)
         )
 
     def iou(box1, box2):
@@ -190,7 +183,7 @@ def calculate_accuracy(model_element, human_element, data_id):
     logger.info(f"[Data ID: {data_id}] IoU score: {iou_score}")
     return iou_score > 0.5
 
-def process_pair(start_image, end_image, yolo_json, human_label_json, output_dir, pipe, description_config, target_config, data_id, font_path):
+def process_pair(start_image, end_image, yolo_json, output_dir, pipe, description_config, target_config, data_id, font_path):
     target_screen_description = get_image_description(end_image, pipe, description_config, data_id)
     
     json_data = parse_json_file(yolo_json)
@@ -202,7 +195,7 @@ def process_pair(start_image, end_image, yolo_json, human_label_json, output_dir
     
     is_valid, model_element = validate_response(model_response, json_data, data_id)
     
-    human_element = get_human_label(human_label_json)
+    human_element = get_human_label(yolo_json)
     
     is_accurate = calculate_accuracy(model_element, human_element, data_id) if is_valid and human_element else False
     
@@ -235,15 +228,13 @@ def process_dataset(dataset_dir, output_dir, pipe, description_config, target_co
                 end_image = os.path.join(root, file)
             elif file.startswith('YOLO') and file.endswith('start.json'):
                 yolo_json = os.path.join(root, file)
-            elif file.startswith('hu_labeled') and file.endswith('start.json'):
-                human_label_json = os.path.join(root, file)
-        if start_image and end_image and yolo_json and human_label_json:
-            pairs.append((start_image, end_image, yolo_json, human_label_json))
+        data_id = os.path.basename(root)
+        if start_image and end_image and yolo_json and data_id:
+            pairs.append((start_image, end_image, yolo_json, data_id))
 
     pbar = tqdm(pairs, desc="Processing image pairs")
-    for idx, (start_image, end_image, yolo_json, human_label_json) in enumerate(pbar, 1):
-        data_id = f"pair_{idx}"
-        result = process_pair(start_image, end_image, yolo_json, human_label_json, output_dir, pipe, description_config, target_config, data_id, font_path)
+    for idx, (start_image, end_image, yolo_json,data_id) in enumerate(pbar, 1):
+        result = process_pair(start_image, end_image, yolo_json, output_dir, pipe, description_config, target_config, data_id, font_path)
         results.append(result)
         total_pairs += 1
         if result['is_accurate']:
@@ -274,8 +265,8 @@ def save_results_to_csv(results, accuracy, output_file):
         writer.writerow({"start_image": "Overall Accuracy", "end_image": f"{accuracy:.2%}"})
 
 def main():
-    dataset_dir = "/root/task/vlm/data/human_labeled"
-    output_dir = "/root/task/vlm/results"
+    dataset_dir = "/root/task/UI-Transition/data/human_labeled"
+    output_dir = "/root/task/UI-Transition/results"
     font_path = "Roboto-Bold.ttf"
     
     if not os.path.exists(output_dir):
@@ -290,12 +281,10 @@ def main():
         min_new_tokens=30    # 确保生成至少一定长度的描述
     )
     target_config = GenerationConfig(
-        max_new_tokens=10,      # 限制生成的 token 数量，因为我们只需要一个数字
         temperature=0.2,       # 降低温度以获得更确定的答案
         top_p=0.95,            # 保持较高的 top_p 以允许一定的灵活性
         top_k=5,               # 限制考虑的 token 数量，但保留一些选择
         repetition_penalty=1.1,# 轻微惩罚重复，确保不会重复输出数字
-        stop_words=["\n", "。", ".", ",", "，"],  # 使用标点符号作为停止词，确保只输出数字
         min_new_tokens=1       # 确保至少生成一个 token（数字）
     )
     pipe = setup_model()
