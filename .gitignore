@@ -1,2 +1,7 @@
 data/
 results/
+cogvlm2-llama3-chat-19B-int4/
+cogvlm2-llama3-chat-19B/
+process_data/
+output/
+

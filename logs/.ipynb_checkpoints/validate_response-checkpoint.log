@@ -1,0 +1,5 @@
+2024-07-26 00:31:55,463 - validate_response - WARNING - [Data ID: p_11_pair_11] Index out of range: 33
+2024-07-26 00:32:03,850 - validate_response - INFO - [Data ID: p_3_pair_73] Valid index found: 1
+2024-07-26 00:32:13,396 - validate_response - INFO - [Data ID: p_5_pair_33] Valid index found: 8
+2024-07-26 00:32:21,071 - validate_response - INFO - [Data ID: p_19_pair_38] Valid index found: 4
+2024-07-26 00:32:27,402 - validate_response - INFO - [Data ID: p_4_pair_96] Valid index found: 2

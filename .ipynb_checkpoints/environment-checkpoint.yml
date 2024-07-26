@@ -1,0 +1,21 @@
+name: vlm
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - numpy=1.22.4
+  - pytorch=2.2.0
+  - torchvision=0.17.0
+  - pytorch-cuda=11.8
+  - pip
+  - pip:
+    - typing_extensions
+    - ninja
+    - hf_transfer
+    - xformers==0.0.24
+    - triton==2.2.0
+    - lmdeploy==0.5.1
+    #  pip install git+https://github.com/haotian-liu/LLaVA.git --no-deps
