@@ -293,9 +293,9 @@ def main():
     parser.add_argument("--train_dataset_rate", type=float, default=0.8,
                         help="Proportion of dataset to use for training")
     parser.add_argument("--local_rank", type=int, default=-1, help="Local rank for distributed training")
-    parser.add_argument("--lora_rank", type=int, default=16, help="Rank parameter for LoRA")
-    parser.add_argument("--lora_alpha", type=int, default=32, help="Alpha parameter for LoRA")
-    parser.add_argument("--lora_target", type=str, default=["vision_expert_query_key_value"],
+    parser.add_argument("--lora_rank", type=int, default=256, help="Rank parameter for LoRA")
+    parser.add_argument("--lora_alpha", type=int, default=512, help="Alpha parameter for LoRA")
+    parser.add_argument("--lora_target", type=str, default=["vision_expert_query_key_value","torch.nn.Linear", "torch.nn.Conv2d"],
                         help="Finetune Target for LoRA")  # you can change the target to other modules such as "language_expert_query_key_value"
     parser.add_argument("--lora_dropout", type=float, default=0.1, help="Dropout rate for LoRA")
     parser.add_argument("--warmup_steps", type=int, default=300,
@@ -348,7 +348,7 @@ def main():
         r=args.lora_rank,
         target_modules=args.lora_target,
         lora_alpha=args.lora_alpha,
-        lora_dropout=args.lora_dropout,
+        lora_dropout=args.lora_dropout
     )
 
     model = get_peft_model(model, peft_config)
